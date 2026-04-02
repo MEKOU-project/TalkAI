@@ -52,18 +52,23 @@
             }));
         }
 
-        // 音声録音停止時の処理を関数化して共通利用
         async function stopRec() {
             if (!mediaRecorder || mediaRecorder.state !== "recording") return;
-            mediaRecorder.stop();
-            document.getElementById('status').innerText = "THINKING...";
             
+            // イベントハンドラを先に設定してから止める
             mediaRecorder.onstop = async () => {
                 const blob = new Blob(audioChunks, { type: 'audio/wav' });
                 const fd = new FormData();
                 fd.append('file', blob);
-                processResponse(fetch('http://localhost:3000/api/voice-chat', { method: 'POST', body: fd }));
+                
+                document.getElementById('status').innerText = "TRANSCRIBING...";
+                processResponse(fetch('http://localhost:3000/api/voice-chat', { 
+                    method: 'POST', 
+                    body: fd 
+                }));
             };
+
+            mediaRecorder.stop();
         }
 
         // ストリーミングレスポンスの処理
